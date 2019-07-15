@@ -22,7 +22,7 @@ steps:
 
 - name: publish helm chart
   pull: default
-  image: quay.io/presslabs/bfc:latest
+  image: quay.io/presslabs/kluster-toolbox
   commands:
   - cd chart
   - helm package locust
