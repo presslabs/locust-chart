@@ -1,0 +1,42 @@
+---
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+clone:
+  disable: true
+
+workspace:
+  base: /root/go
+  path: src/github.com/presslabs/locust-chart
+
+steps:
+- name: clone
+  image: plugins/git
+  settings:
+    depth: 0
+    tags: true
+
+- name: publish helm chart
+  pull: default
+  image: quay.io/presslabs/bfc:latest
+  commands:
+  - cd chart
+  - helm package locust
+  - CHART="$(basename *.tgz)" ; MESSAGE="Publish $(basename $CHART .tgz)"
+  - /usr/local/bin/gh put --skip-existing -m "$MESSAGE" "$CHART" "presslabs/charts/docs/"
+  environment:
+    GH_PASSWORD:
+      from_secret: GH_PASSWORD
+    GH_USER: presslabs-bot
+  when:
+    event:
+    - tag
+
+volumes:
+- name: cache
+  host:
+path: /var/lib/cache/presslabs/locust-chart/cache
